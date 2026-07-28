@@ -8,9 +8,9 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-fpgm86$^20)e9fy27mog$8w56tth46rrby_07t8i*kza48wkfz"
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-fpgm86$^20)e9fy27mog$8w56tth46rrby_07t8i*kza48wkfz")
 
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True").lower() in ["true", "1"]
 
 ALLOWED_HOSTS = ['*']
 
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware", # Production static files handling
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -66,7 +67,6 @@ TEMPLATES = [
 WSGI_APPLICATION = "inventory_system.wsgi.application"
 
 # Database Configuration
-# Set USE_SQL_SERVER = True in environment or config to connect directly to MS SQL Server
 USE_SQL_SERVER = os.environ.get("USE_SQL_SERVER", "False").lower() in ["true", "1"]
 
 if USE_SQL_SERVER:
@@ -119,6 +119,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 # Media files (Product Images, QR Codes)
 MEDIA_URL = "/media/"
