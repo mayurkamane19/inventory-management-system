@@ -14,6 +14,13 @@ DEBUG = os.environ.get("DEBUG", "True").lower() in ["true", "1"]
 
 ALLOWED_HOSTS = ['*']
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+    'https://*.render.com',
+    'http://127.0.0.1',
+    'http://localhost',
+]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -22,6 +29,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
 
     # Custom Inventory System Apps
@@ -119,7 +127,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 # Media files (Product Images, QR Codes)
 MEDIA_URL = "/media/"
