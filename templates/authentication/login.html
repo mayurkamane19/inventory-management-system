@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - Inventory Management System{% endblock %}
+
+{% block auth_content %}
+<div class="d-flex align-items-center justify-content-center min-vh-100 bg-dark position-relative overflow-hidden">
+    <!-- Glowing background accent circles -->
+    <div class="position-absolute top-0 start-0 translate-middle rounded-circle bg-primary opacity-25 blur-3xl" style="width: 400px; height: 400px; filter: blur(100px);"></div>
+    <div class="position-absolute bottom-0 end-0 translate-middle-x rounded-circle bg-purple opacity-25 blur-3xl" style="width: 450px; height: 450px; filter: blur(120px); background: #8b5cf6;"></div>
+
+    <div class="card glass-card p-4 p-md-5 border-secondary shadow-lg" style="max-width: 440px; width: 100%; z-index: 10;">
+        <div class="text-center mb-4">
+            <div class="d-inline-flex p-3 rounded-circle bg-primary bg-opacity-25 text-primary mb-3">
+                <i class="bi bi-box-seam-fill fs-1"></i>
+            </div>
+            <h3 class="fw-bold text-white tracking-wide">Welcome Back</h3>
+            <p class="text-muted fs-6">Inventory Management System Admin Portal</p>
+        </div>
+
+        <form method="post" action="{% url 'authentication:login' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="username" class="form-label text-muted small fw-semibold">USERNAME</label>
+                {{ form.username }}
+            </div>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <label for="password" class="form-label text-muted small fw-semibold mb-0">PASSWORD</label>
+                    <a href="{% url 'authentication:forgot_password' %}" class="small text-primary text-decoration-none">Forgot?</a>
+                </div>
+                {{ form.password }}
+            </div>
+
+            <div class="d-grid mt-4">
+                <button type="submit" class="btn btn-primary btn-lg fw-bold shadow">
+                    Sign In <i class="bi bi-arrow-right ms-2"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Global Search Results - Inventory System{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h3 class="fw-bold text-white mb-1"><i class="bi bi-search text-primary me-2"></i> Search Results</h3>
+    <p class="text-muted mb-0">Showing matching records for query: <strong class="text-primary">"{{ query }}"</strong></p>
+</div>
+
+<!-- Products Results -->
+<div class="glass-card p-4 mb-4">
+    <h5 class="fw-bold text-white mb-3"><i class="bi bi-box-seam text-primary me-2"></i> Products ({{ products|length }})</h5>
+    <div class="table-responsive">
+        <table class="table custom-table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>SKU</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in products %}
+                <tr>
+                    <td class="fw-bold text-white">{{ p.name }}</td>
+                    <td class="text-primary">{{ p.sku }}</td>
+                    <td class="text-success">₹{{ p.selling_price }}</td>
+                    <td>{{ p.stock_quantity }} units</td>
+                    <td class="text-end">
+                        <a href="{% url 'products:product_detail' p.id %}" class="btn btn-sm btn-outline-info">View Product</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-muted">No products found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Contacts & Categories Results -->
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="glass-card p-4">
+            <h5 class="fw-bold text-white mb-3"><i class="bi bi-truck text-primary me-2"></i> Suppliers ({{ suppliers|length }})</h5>
+            <ul class="list-group list-group-flush bg-transparent">
+                {% for s in suppliers %}
+                <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between">
+                    <span>{{ s.company|default:s.name }}</span>
+                    <a href="{% url 'contacts:supplier_list' %}" class="btn btn-sm btn-outline-secondary">Go to Suppliers</a>
+                </li>
+                {% empty %}
+                <li class="list-group-item bg-transparent text-muted border-secondary">No suppliers found.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="glass-card p-4">
+            <h5 class="fw-bold text-white mb-3"><i class="bi bi-people text-primary me-2"></i> Customers ({{ customers|length }})</h5>
+            <ul class="list-group list-group-flush bg-transparent">
+                {% for c in customers %}
+                <li class="list-group-item bg-transparent text-white border-secondary d-flex justify-content-between">
+                    <span>{{ c.name }}</span>
+                    <a href="{% url 'contacts:customer_list' %}" class="btn btn-sm btn-outline-secondary">Go to Customers</a>
+                </li>
+                {% empty %}
+                <li class="list-group-item bg-transparent text-muted border-secondary">No customers found.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

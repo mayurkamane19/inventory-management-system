@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Inventory System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="glass-card p-4">
+            <h4 class="fw-bold text-white mb-4"><i class="bi bi-box-seam text-primary me-2"></i> {{ title }}</h4>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label text-muted small fw-semibold">SKU CODE *</label>
+                        {{ form.sku }}
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label text-muted small fw-semibold">PRODUCT NAME *</label>
+                        {{ form.name }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-muted small fw-semibold">BARCODE (EAN/UPC)</label>
+                        {{ form.barcode }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-muted small fw-semibold">CATEGORY *</label>
+                        {{ form.category }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label text-muted small fw-semibold">SUPPLIER</label>
+                        {{ form.supplier }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small fw-semibold">UNIT COST PRICE (₹)</label>
+                        {{ form.unit_price }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small fw-semibold">SELLING PRICE (₹)</label>
+                        {{ form.selling_price }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small fw-semibold">INITIAL STOCK</label>
+                        {{ form.stock_quantity }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small fw-semibold">REORDER LEVEL</label>
+                        {{ form.reorder_level }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-semibold">PRODUCT IMAGE</label>
+                        {{ form.image }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-semibold">STATUS</label>
+                        {{ form.status }}
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label text-muted small fw-semibold">DESCRIPTION</label>
+                        {{ form.description }}
+                    </div>
+                </div>
+
+                <div class="mt-4 text-end">
+                    <a href="{% url 'products:product_list' %}" class="btn btn-outline-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn btn-primary fw-bold px-4"><i class="bi bi-save me-1"></i> Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

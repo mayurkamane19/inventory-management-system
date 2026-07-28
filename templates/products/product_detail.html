@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ product.name }} - Product Details{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-white mb-1"><i class="bi bi-box-seam text-primary me-2"></i> {{ product.name }}</h3>
+        <span class="badge bg-dark border border-secondary text-primary me-2">SKU: {{ product.sku }}</span>
+        <span class="badge bg-dark border border-secondary text-white">{{ product.category.name }}</span>
+    </div>
+    <div>
+        <a href="{% url 'products:product_update' product.id %}" class="btn btn-primary fw-bold me-2"><i class="bi bi-pencil-fill me-1"></i> Edit Product</a>
+        <a href="{% url 'products:product_list' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back to List</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="glass-card p-4 text-center">
+            {% if product.image %}
+                <img src="{{ product.image.url }}" class="rounded img-fluid mb-3 border border-secondary" style="max-height: 220px; object-fit: contain;" alt="{{ product.name }}">
+            {% else %}
+                <div class="rounded bg-dark border border-secondary py-5 mb-3 text-muted">
+                    <i class="bi bi-image fs-1"></i>
+                    <p class="mb-0 small">No image uploaded</p>
+                </div>
+            {% endif %}
+
+            <h5 class="fw-bold text-white mb-3">Generated QR Code</h5>
+            {% if product.qr_code %}
+                <img src="{{ product.qr_code.url }}" class="rounded bg-white p-2 border shadow-sm mb-2" width="160" height="160" alt="QR Code">
+                <p class="small text-muted mb-0">Scan for instant SKU details</p>
+            {% else %}
+                <p class="text-muted small">QR code not generated yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="glass-card p-4">
+            <h5 class="fw-bold text-white mb-4"><i class="bi bi-info-circle-fill text-primary me-2"></i> Product Information</h5>
+            
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="p-3 rounded bg-dark border border-secondary">
+                        <span class="text-muted small d-block">SELLING PRICE</span>
+                        <span class="fs-4 fw-bold text-success">₹{{ product.selling_price }}</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 rounded bg-dark border border-secondary">
+                        <span class="text-muted small d-block">UNIT COST PRICE</span>
+                        <span class="fs-4 fw-bold text-white">₹{{ product.unit_price }}</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 rounded bg-dark border border-secondary">
+                        <span class="text-muted small d-block">CURRENT STOCK QUANTITY</span>
+                        <span class="fs-4 fw-bold text-white me-2">{{ product.stock_quantity }}</span>
+                        {% if product.stock_quantity <= 0 %}
+                            <span class="badge bg-danger">Out of Stock</span>
+                        {% elif product.stock_quantity <= product.reorder_level %}
+                            <span class="badge bg-warning text-dark">Low Stock</span>
+                        {% else %}
+                            <span class="badge bg-success">In Stock</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-3 rounded bg-dark border border-secondary">
+                        <span class="text-muted small d-block">TOTAL INVENTORY VALUE</span>
+                        <span class="fs-4 fw-bold text-primary">₹{{ product.inventory_value }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <hr class="border-secondary my-4">
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <span class="text-muted small d-block">BARCODE</span>
+                    <span class="fw-bold text-white fs-6"><i class="bi bi-barcode me-1"></i> {{ product.barcode|default:"N/A" }}</span>
+                </div>
+                <div class="col-md-6">
+                    <span class="text-muted small d-block">SUPPLIER</span>
+                    <span class="fw-bold text-white fs-6">{{ product.supplier.company|default:product.supplier.name|default:"Not Assigned" }}</span>
+                </div>
+                <div class="col-md-6">
+                    <span class="text-muted small d-block">REORDER THRESHOLD</span>
+                    <span class="fw-bold text-white fs-6">{{ product.reorder_level }} units</span>
+                </div>
+                <div class="col-md-6">
+                    <span class="text-muted small d-block">STATUS</span>
+                    <span class="fw-bold text-white fs-6">{{ product.status }}</span>
+                </div>
+                <div class="col-md-12">
+                    <span class="text-muted small d-block">DESCRIPTION</span>
+                    <p class="text-white mb-0 mt-1">{{ product.description|default:"No description provided." }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

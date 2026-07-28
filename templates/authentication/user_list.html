@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}User Management - Inventory System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-white mb-1"><i class="bi bi-people-fill text-primary me-2"></i> User Management</h3>
+        <p class="text-muted mb-0">Manage system users, assigned roles, and access controls.</p>
+    </div>
+    <a href="{% url 'authentication:user_create' %}" class="btn btn-primary fw-bold shadow"><i class="bi bi-person-plus-fill me-2"></i> Add New User</a>
+</div>
+
+<div class="glass-card p-4">
+    <div class="table-responsive">
+        <table class="table custom-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Joined Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px;">
+                                {{ u.username|first|upper }}
+                            </div>
+                            <div>
+                                <div class="fw-bold text-white">{{ u.get_full_name|default:u.username }}</div>
+                                <div class="small text-muted">@{{ u.username }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ u.email|default:"N/A" }}</td>
+                    <td>
+                        <span class="badge bg-gradient-{% if u.profile.role == 'Admin' %}purple{% else %}blue{% endif %} px-3 py-2">
+                            {{ u.profile.role|default:"Staff" }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if u.is_active %}
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success px-2 py-1"><i class="bi bi-check-circle me-1"></i> Active</span>
+                        {% else %}
+                            <span class="badge bg-danger bg-opacity-25 text-danger border border-danger px-2 py-1"><i class="bi bi-x-circle me-1"></i> Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ u.date_joined|date:"M d, Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

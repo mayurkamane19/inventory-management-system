@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block title %}Audit Logs & Backup - Inventory System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-white mb-1"><i class="bi bi-journal-check text-primary me-2"></i> System Audit Logs</h3>
+        <p class="text-muted mb-0">Track user actions, login events, CRUD operations, and security logs.</p>
+    </div>
+    <a href="{% url 'audit:backup_database' %}" class="btn btn-outline-warning fw-bold"><i class="bi bi-database-down me-1"></i> Backup Database (JSON)</a>
+</div>
+
+<div class="glass-card p-4">
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-5">
+            <div class="input-group">
+                <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" name="search" class="form-control bg-dark text-white border-secondary" placeholder="Search action..." value="{{ search_query }}">
+            </div>
+        </div>
+        <div class="col-md-4">
+            <select name="module" class="form-select bg-dark text-white border-secondary" onchange="this.form.submit()">
+                <option value="">All Modules</option>
+                <option value="Authentication" {% if module_filter == 'Authentication' %}selected{% endif %}>Authentication</option>
+                <option value="Products" {% if module_filter == 'Products' %}selected{% endif %}>Products</option>
+                <option value="Contacts" {% if module_filter == 'Contacts' %}selected{% endif %}>Contacts</option>
+                <option value="Transactions" {% if module_filter == 'Transactions' %}selected{% endif %}>Transactions</option>
+                <option value="Audit" {% if module_filter == 'Audit' %}selected{% endif %}>Audit</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-outline-secondary w-100">Filter</button>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table custom-table">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Module</th>
+                    <th>Details</th>
+                    <th>IP Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in page_obj %}
+                <tr>
+                    <td class="text-muted small">{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
+                    <td>
+                        <span class="badge bg-dark border border-secondary text-white fw-semibold">
+                            <i class="bi bi-person me-1"></i>{{ log.user.username|default:"System" }}
+                        </span>
+                    </td>
+                    <td class="fw-bold text-white">{{ log.action }}</td>
+                    <td><span class="badge bg-primary bg-opacity-25 text-primary border border-primary px-2 py-1">{{ log.module }}</span></td>
+                    <td class="text-muted small">{{ log.details|default:"-" }}</td>
+                    <td class="text-muted small">{{ log.ip_address|default:"127.0.0.1" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">No audit logs recorded yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav class="mt-4">
+        <ul class="pagination justify-content-end mb-0">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link bg-dark text-white border-secondary" href="?page={{ page_obj.previous_page_number }}&module={{ module_filter }}&search={{ search_query }}">Previous</a></li>
+            {% endif %}
+            <li class="page-item disabled"><span class="page-link bg-dark text-muted border-secondary">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link bg-dark text-white border-secondary" href="?page={{ page_obj.next_page_number }}&module={{ module_filter }}&search={{ search_query }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}

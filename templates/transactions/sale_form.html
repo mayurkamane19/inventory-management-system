@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Sales Invoice - Inventory System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-11">
+        <div class="glass-card p-4">
+            <h4 class="fw-bold text-white mb-4"><i class="bi bi-cart-check-fill text-primary me-2"></i> Create Sales Invoice</h4>
+            
+            <form method="post" id="sale-form">
+                {% csrf_token %}
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small fw-semibold">INVOICE NUMBER *</label>
+                        <input type="text" name="invoice_no" class="form-control bg-dark text-white border-secondary" value="{{ auto_inv }}" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small fw-semibold">CUSTOMER</label>
+                        <select name="customer" class="form-select bg-dark text-white border-secondary">
+                            <option value="">Walk-in Customer</option>
+                            {% for cust in customers %}
+                                <option value="{{ cust.id }}">{{ cust.name }} ({{ cust.phone|default:"No phone" }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small fw-semibold">SALE DATE *</label>
+                        <input type="datetime-local" name="sale_date" class="form-control bg-dark text-white border-secondary" value="{{ now_str }}" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-muted small fw-semibold">GST RATE (%)</label>
+                        <select name="gst_percent" id="gst_percent" class="form-select bg-dark text-white border-secondary">
+                            <option value="0.00">0% (Exempt)</option>
+                            <option value="5.00">5% GST</option>
+                            <option value="12.00">12% GST</option>
+                            <option value="18.00" selected>18% GST (Standard)</option>
+                            <option value="28.00">28% GST</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h5 class="fw-bold text-white mb-3">Items to Sell</h5>
+                <div class="table-responsive mb-3">
+                    <table class="table custom-table" id="sale-items-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 40%;">Product</th>
+                                <th style="width: 15%;">Available Stock</th>
+                                <th style="width: 15%;">Quantity</th>
+                                <th style="width: 20%;">Selling Price (₹)</th>
+                                <th style="width: 10%;" class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <select name="product_id[]" class="form-select bg-dark text-white border-secondary product-select" required>
+                                        <option value="">Select Product</option>
+                                        {% for prod in products %}
+                                            <option value="{{ prod.id }}" data-price="{{ prod.selling_price }}" data-stock="{{ prod.stock_quantity }}">{{ prod.name }} (Stock: {{ prod.stock_quantity }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td>
+                                    <span class="badge bg-dark border border-secondary text-info stock-badge">0</span>
+                                </td>
+                                <td>
+                                    <input type="number" name="quantity[]" class="form-control bg-dark text-white border-secondary qty-input" min="1" value="1" required>
+                                </td>
+                                <td>
+                                    <input type="number" name="selling_price[]" class="form-control bg-dark text-white border-secondary price-input" step="0.01" value="0.00" required>
+                                </td>
+                                <td class="text-end">
+                                    <button type="button" class="btn btn-outline-danger btn-sm remove-row-btn"><i class="bi bi-trash-fill"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <button type="button" class="btn btn-outline-primary btn-sm mb-4" id="add-sale-row-btn"><i class="bi bi-plus-circle me-1"></i> Add Another Item</button>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small fw-semibold">DISCOUNT AMOUNT (₹)</label>
+                        <input type="number" name="discount" id="discount_input" class="form-control bg-dark text-white border-secondary" step="0.01" value="0.00">
+                        <label class="form-label text-muted small fw-semibold mt-3">NOTES / PAYMENT DETAILS</label>
+                        <textarea name="notes" class="form-control bg-dark text-white border-secondary" rows="2" placeholder="e.g. Paid via UPI / Credit Card"></textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="p-3 rounded bg-dark border border-secondary">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Subtotal:</span>
+                                <span class="fw-bold text-white" id="summary-subtotal">₹0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Discount:</span>
+                                <span class="fw-bold text-warning" id="summary-discount">- ₹0.00</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">GST Amount:</span>
+                                <span class="fw-bold text-info" id="summary-gst">+ ₹0.00</span>
+                            </div>
+                            <hr class="border-secondary">
+                            <div class="d-flex justify-content-between fs-4 fw-bold">
+                                <span class="text-white">Total Payable:</span>
+                                <span class="text-success" id="summary-total">₹0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-end">
+                    <a href="{% url 'transactions:sale_list' %}" class="btn btn-outline-secondary me-2">Cancel</a>
+                    <button type="submit" class="btn btn-success btn-lg fw-bold px-4"><i class="bi bi-receipt me-1"></i> Generate Invoice & Complete Sale</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const tableBody = document.querySelector('#sale-items-table tbody');
+    const addRowBtn = document.getElementById('add-sale-row-btn');
+
+    addRowBtn.addEventListener('click', () => {
+        const firstRow = tableBody.querySelector('tr');
+        const newRow = firstRow.cloneNode(true);
+        newRow.querySelector('select').value = '';
+        newRow.querySelector('.stock-badge').innerText = '0';
+        newRow.querySelector('.qty-input').value = '1';
+        newRow.querySelector('.price-input').value = '0.00';
+        tableBody.appendChild(newRow);
+        calculateSummary();
+    });
+
+    tableBody.addEventListener('click', (e) => {
+        if (e.target.closest('.remove-row-btn')) {
+            if (tableBody.querySelectorAll('tr').length > 1) {
+                e.target.closest('tr').remove();
+                calculateSummary();
+            }
+        }
+    });
+
+    tableBody.addEventListener('change', (e) => {
+        if (e.target.classList.contains('product-select')) {
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            const price = selectedOption.getAttribute('data-price') || '0.00';
+            const stock = selectedOption.getAttribute('data-stock') || '0';
+            const row = e.target.closest('tr');
+            row.querySelector('.price-input').value = price;
+            row.querySelector('.stock-badge').innerText = stock;
+            row.querySelector('.qty-input').max = stock;
+            calculateSummary();
+        }
+    });
+
+    tableBody.addEventListener('input', calculateSummary);
+    document.getElementById('discount_input').addEventListener('input', calculateSummary);
+    document.getElementById('gst_percent').addEventListener('change', calculateSummary);
+
+    function calculateSummary() {
+        let subtotal = 0;
+        const rows = tableBody.querySelectorAll('tr');
+        rows.forEach(row => {
+            const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
+            const price = parseFloat(row.querySelector('.price-input').value) || 0;
+            subtotal += (qty * price);
+        });
+
+        const discount = parseFloat(document.getElementById('discount_input').value) || 0;
+        const gstRate = parseFloat(document.getElementById('gst_percent').value) || 0;
+        
+        let taxable = Math.max(0, subtotal - discount);
+        let gst = taxable * (gstRate / 100);
+        let total = taxable + gst;
+
+        document.getElementById('summary-subtotal').innerText = `₹${subtotal.toFixed(2)}`;
+        document.getElementById('summary-discount').innerText = `- ₹${discount.toFixed(2)}`;
+        document.getElementById('summary-gst').innerText = `+ ₹${gst.toFixed(2)}`;
+        document.getElementById('summary-total').innerText = `₹${total.toFixed(2)}`;
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Inventory System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold text-white mb-1"><i class="bi bi-speedometer2 text-primary me-2"></i> Dashboard Overview</h3>
+        <p class="text-secondary mb-0">Real-time metrics, inventory valuation, stock alerts, and financial analytics.</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'transactions:sale_create' %}" class="btn btn-success fw-bold shadow"><i class="bi bi-plus-lg me-1"></i> New Sale Invoice</a>
+        <a href="{% url 'products:product_create' %}" class="btn btn-primary fw-bold shadow"><i class="bi bi-box-seam me-1"></i> Add Product</a>
+    </div>
+</div>
+
+<!-- Primary KPI Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="glass-card p-3 d-flex align-items-center gap-3">
+            <div class="p-3 rounded-4 bg-gradient-blue text-white fs-3 shadow"><i class="bi bi-box-seam"></i></div>
+            <div>
+                <span class="card-label">Total Products</span>
+                <h3 class="fw-bold text-white mb-0">{{ total_products }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="glass-card p-3 d-flex align-items-center gap-3">
+            <div class="p-3 rounded-4 bg-gradient-emerald text-white fs-3 shadow"><i class="bi bi-currency-rupee"></i></div>
+            <div>
+                <span class="card-label">Inventory Value</span>
+                <h3 class="fw-bold text-emerald mb-0" style="color: #10b981;">₹{{ current_inventory_value|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="glass-card p-3 d-flex align-items-center gap-3">
+            <div class="p-3 rounded-4 bg-gradient-purple text-white fs-3 shadow"><i class="bi bi-graph-up-arrow"></i></div>
+            <div>
+                <span class="card-label">Total Sales</span>
+                <h3 class="fw-bold text-white mb-0">₹{{ total_sales_val|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="glass-card p-3 d-flex align-items-center gap-3">
+            <div class="p-3 rounded-4 bg-gradient-teal text-white fs-3 shadow"><i class="bi bi-bag-check"></i></div>
+            <div>
+                <span class="card-label">Total Purchases</span>
+                <h3 class="fw-bold text-white mb-0">₹{{ total_purchase_val|floatformat:2 }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Secondary KPI Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-2 col-sm-4">
+        <div class="glass-card p-3 text-center">
+            <span class="card-label-sub">Categories</span>
+            <h4 class="fw-bold text-white mb-0">{{ total_categories }}</h4>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+        <div class="glass-card p-3 text-center">
+            <span class="card-label-sub">Suppliers</span>
+            <h4 class="fw-bold text-white mb-0">{{ total_suppliers }}</h4>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+        <div class="glass-card p-3 text-center">
+            <span class="card-label-sub">Customers</span>
+            <h4 class="fw-bold text-white mb-0">{{ total_customers }}</h4>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+        <div class="glass-card p-3 text-center border-start border-success border-3">
+            <span class="card-label-sub">Today's Sales</span>
+            <h4 class="fw-bold text-success mb-0">₹{{ todays_sales|floatformat:2 }}</h4>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+        <div class="glass-card p-3 text-center border-start border-warning border-3">
+            <span class="card-label-sub" style="color: #fbbf24 !important;">Low Stock</span>
+            <h4 class="fw-bold text-warning mb-0">{{ low_stock_products }}</h4>
+        </div>
+    </div>
+    <div class="col-md-2 col-sm-4">
+        <div class="glass-card p-3 text-center border-start border-danger border-3">
+            <span class="card-label-sub" style="color: #f87171 !important;">Out of Stock</span>
+            <h4 class="fw-bold text-danger mb-0">{{ out_of_stock_products }}</h4>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Chart.js Graphs -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-white mb-0"><i class="bi bi-bar-chart-fill text-primary me-2"></i> Monthly Sales vs Purchases</h5>
+                <span class="badge bg-dark border border-secondary text-secondary">Last 6 Months</span>
+            </div>
+            <div style="height: 300px;">
+                <canvas id="salesVsPurchaseChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card p-4 h-100">
+            <h5 class="fw-bold text-white mb-3"><i class="bi bi-pie-chart-fill text-purple me-2"></i> Stock by Category</h5>
+            <div style="height: 300px;" class="d-flex align-items-center justify-content-center">
+                <canvas id="categoryPieChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <h5 class="fw-bold text-white mb-3"><i class="bi bi-trophy-fill text-warning me-2"></i> Top 5 Selling Products</h5>
+            <div style="height: 250px;">
+                <canvas id="topSellingChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-4">
+            <h5 class="fw-bold text-white mb-3"><i class="bi bi-graph-up text-success me-2"></i> Monthly Revenue Graph</h5>
+            <div style="height: 250px;">
+                <canvas id="revenueGraphChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity Feeds -->
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="glass-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-white mb-0"><i class="bi bi-receipt text-success me-2"></i> Latest Sales</h5>
+                <a href="{% url 'transactions:sale_list' %}" class="small text-primary text-decoration-none">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th>Invoice</th>
+                            <th>Customer</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in latest_sales %}
+                        <tr>
+                            <td class="fw-bold text-primary">#{{ s.invoice_no }}</td>
+                            <td class="text-white">{{ s.customer.name|default:"Walk-in Customer" }}</td>
+                            <td class="fw-bold text-success">₹{{ s.total_amount|floatformat:2 }}</td>
+                            <td class="small text-secondary">{{ s.sale_date|date:"M d, H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-secondary text-center">No recent sales.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="glass-card p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-white mb-0"><i class="bi bi-bag-plus text-primary me-2"></i> Latest Purchases</h5>
+                <a href="{% url 'transactions:purchase_list' %}" class="small text-primary text-decoration-none">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th>Invoice</th>
+                            <th>Supplier</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in latest_purchases %}
+                        <tr>
+                            <td class="fw-bold text-primary">#{{ p.invoice_no }}</td>
+                            <td class="text-white">{{ p.supplier.company|default:p.supplier.name }}</td>
+                            <td class="fw-bold text-white">₹{{ p.total_amount|floatformat:2 }}</td>
+                            <td class="small text-secondary">{{ p.purchase_date|date:"M d, H:i" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-secondary text-center">No recent purchases.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    fetch("{% url 'dashboard:analytics_api' %}")
+        .then(res => res.json())
+        .then(data => {
+            const ctx1 = document.getElementById('salesVsPurchaseChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: data.monthly_labels,
+                    datasets: [
+                        {
+                            label: 'Sales (₹)',
+                            data: data.sales_data,
+                            backgroundColor: 'rgba(59, 130, 246, 0.85)',
+                            borderColor: '#3b82f6',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        },
+                        {
+                            label: 'Purchases (₹)',
+                            data: data.purchase_data,
+                            backgroundColor: 'rgba(20, 184, 166, 0.85)',
+                            borderColor: '#14b8a6',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#cbd5e1' } } },
+                    scales: {
+                        x: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.08)' } },
+                        y: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.08)' } }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('categoryPieChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: data.cat_labels,
+                    datasets: [{
+                        data: data.cat_data,
+                        backgroundColor: ['#3b82f6', '#10b981', '#a855f7', '#f43f5e', '#f59e0b', '#14b8a6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { color: '#cbd5e1' } } }
+                }
+            });
+
+            const ctx3 = document.getElementById('topSellingChart').getContext('2d');
+            new Chart(ctx3, {
+                type: 'bar',
+                data: {
+                    labels: data.top_prod_labels,
+                    datasets: [{
+                        label: 'Units Sold',
+                        data: data.top_prod_data,
+                        backgroundColor: 'rgba(245, 158, 11, 0.85)',
+                        borderColor: '#f59e0b',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.08)' } },
+                        y: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.08)' } }
+                    }
+                }
+            });
+
+            const ctx4 = document.getElementById('revenueGraphChart').getContext('2d');
+            new Chart(ctx4, {
+                type: 'line',
+                data: {
+                    labels: data.monthly_labels,
+                    datasets: [{
+                        label: 'Net Revenue (₹)',
+                        data: data.sales_data,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#cbd5e1' } } },
+                    scales: {
+                        x: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.08)' } },
+                        y: { ticks: { color: '#cbd5e1' }, grid: { color: 'rgba(255,255,255,0.08)' } }
+                    }
+                }
+            });
+        });
+});
+</script>
+{% endblock %}

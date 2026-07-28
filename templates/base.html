@@ -1,0 +1,178 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Inventory Management System{% endblock %}</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div id="loading-spinner">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container p-3">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="toast align-items-center text-white bg-{% if message.tags == 'error' %}danger{% elif message.tags == 'success' %}success{% else %}primary{% endif %} border-0 mb-2 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            <i class="bi bi-info-circle-fill me-2"></i> {{ message }}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    {% if user.is_authenticated %}
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar Navigation -->
+        <div id="sidebar-wrapper" class="no-print">
+            <div class="sidebar-heading d-flex align-items-center gap-2">
+                <i class="bi bi-box-seam-fill text-primary fs-3"></i>
+                <span class="fw-bold tracking-wide">StockMaster Pro</span>
+            </div>
+            <div class="list-group list-group-flush mt-3">
+                <a href="{% url 'dashboard:index' %}" class="list-group-item {% if request.resolver_match.url_name == 'index' %}active{% endif %}">
+                    <i class="bi bi-grid-1x2-fill"></i> Dashboard
+                </a>
+                <a href="{% url 'products:product_list' %}" class="list-group-item {% if 'product' in request.path %}active{% endif %}">
+                    <i class="bi bi-box-seam"></i> Products
+                </a>
+                <a href="{% url 'products:category_list' %}" class="list-group-item {% if 'category' in request.path %}active{% endif %}">
+                    <i class="bi bi-tags-fill"></i> Categories
+                </a>
+                <a href="{% url 'contacts:supplier_list' %}" class="list-group-item {% if 'supplier' in request.path %}active{% endif %}">
+                    <i class="bi bi-truck"></i> Suppliers
+                </a>
+                <a href="{% url 'contacts:customer_list' %}" class="list-group-item {% if 'customer' in request.path %}active{% endif %}">
+                    <i class="bi bi-people-fill"></i> Customers
+                </a>
+                <a href="{% url 'transactions:purchase_list' %}" class="list-group-item {% if 'purchase' in request.path %}active{% endif %}">
+                    <i class="bi bi-bag-plus-fill"></i> Purchases
+                </a>
+                <a href="{% url 'transactions:sale_list' %}" class="list-group-item {% if 'sale' in request.path %}active{% endif %}">
+                    <i class="bi bi-receipt"></i> Sales Invoices
+                </a>
+                <a href="{% url 'inventory:stock_overview' %}" class="list-group-item {% if 'inventory' in request.path %}active{% endif %}">
+                    <i class="bi bi-diagram-3-fill"></i> Inventory & Stock
+                </a>
+                <a href="{% url 'reports:report_dashboard' %}" class="list-group-item {% if 'report' in request.path %}active{% endif %}">
+                    <i class="bi bi-bar-chart-line-fill"></i> Reports & Analytics
+                </a>
+                {% if user.profile.role == 'Admin' or user.is_superuser %}
+                <a href="{% url 'audit:audit_list' %}" class="list-group-item {% if 'audit' in request.path %}active{% endif %}">
+                    <i class="bi bi-journal-check"></i> Audit Logs
+                </a>
+                <a href="{% url 'authentication:user_list' %}" class="list-group-item {% if 'user' in request.path %}active{% endif %}">
+                    <i class="bi bi-person-gear"></i> User Management
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Page Content Wrapper -->
+        <div id="page-content-wrapper" class="flex-grow-1">
+            <!-- Top Navbar -->
+            <nav class="navbar navbar-expand-lg top-navbar no-print">
+                <div class="container-fluid">
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- Global Search Form -->
+                        <form class="d-none d-md-flex" onsubmit="event.preventDefault(); executeGlobalSearch();">
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary text-muted"><i class="bi bi-search"></i></span>
+                                <input type="text" id="global-search-input" class="form-control bg-dark border-secondary text-white" placeholder="Search products, SKU, suppliers, customers..." style="width: 320px;">
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- Theme Toggle Button -->
+                        <button class="btn btn-outline-secondary rounded-circle" id="theme-toggle-btn" title="Toggle Light/Dark Theme">
+                            <i class="bi bi-sun-fill text-warning"></i>
+                        </button>
+
+                        <!-- Low Stock Notification Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary position-relative" type="button" id="notifDropdown" data-bs-toggle="dropdown">
+                                <i class="bi bi-bell-fill"></i>
+                                {% if low_stock_count %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ low_stock_count }}
+                                </span>
+                                {% endif %}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end p-2 shadow" style="min-width: 280px;" aria-labelledby="notifDropdown">
+                                <li class="dropdown-header text-uppercase fw-bold text-muted">Stock Alerts</li>
+                                <li><hr class="dropdown-divider"></li>
+                                {% if low_stock_count %}
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center gap-2 text-warning" href="{% url 'inventory:stock_overview' %}">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> {{ low_stock_count }} Products in Low/Out of Stock!
+                                    </a>
+                                </li>
+                                {% else %}
+                                <li><span class="dropdown-item text-muted">No low stock alerts.</span></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+
+                        <!-- User Profile Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn btn-dark dropdown-toggle d-flex align-items-center gap-2 border-secondary" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                                {% if user.profile.avatar %}
+                                    <img src="{{ user.profile.avatar.url }}" class="rounded-circle" width="32" height="32" alt="Avatar">
+                                {% else %}
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px;">
+                                        {{ user.username|first|upper }}
+                                    </div>
+                                {% endif %}
+                                <span class="fw-semibold text-white d-none d-md-inline">{{ user.get_full_name|default:user.username }}</span>
+                                <span class="badge bg-gradient-blue ms-1">{{ user.profile.role|default:"Staff" }}</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="{% url 'authentication:profile' %}"><i class="bi bi-person-fill me-2"></i> My Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'authentication:change_password' %}"><i class="bi bi-key-fill me-2"></i> Change Password</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'authentication:logout' %}"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Page Content -->
+            <div class="container-fluid p-4">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+        {% block auth_content %}{% endblock %}
+    {% endif %}
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
