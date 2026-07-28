@@ -2,6 +2,8 @@
 
 A production-ready, feature-complete Inventory Management System built with **Python Django**, **Microsoft SQL Server (T-SQL scripts & Django ORM)**, **Bootstrap 5 (Dark & Light Glassmorphism UI)**, and **Chart.js**.
 
+🚀 **Live Application Demo**: [https://inventory-management-system-1ipq.onrender.com](https://inventory-management-system-1ipq.onrender.com)
+
 ![Admin Dashboard Overview](static/images/dashboard_preview.png)
 
 ---
