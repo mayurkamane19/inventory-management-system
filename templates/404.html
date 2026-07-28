@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}404 - Page Not Found | StockMaster Pro{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-center min-vh-75 text-center">
+    <div class="glass-card p-5 border-secondary shadow-lg" style="max-width: 540px; width: 100%;">
+        <div class="d-inline-flex p-4 rounded-circle bg-danger bg-opacity-25 text-danger mb-4">
+            <i class="bi bi-exclamation-octagon-fill display-1"></i>
+        </div>
+        <h1 class="display-4 fw-bold text-white mb-2">404</h1>
+        <h4 class="fw-bold text-secondary mb-3">Oops! Page Not Found</h4>
+        <p class="text-muted mb-4">The page or inventory resource you are looking for might have been removed, renamed, or is temporarily unavailable.</p>
+        
+        <div class="d-flex justify-content-center gap-3">
+            <a href="{% url 'dashboard:index' %}" class="btn btn-primary btn-lg fw-bold shadow">
+                <i class="bi bi-house-door-fill me-2"></i> Back to Dashboard
+            </a>
+            <a href="{% url 'products:product_list' %}" class="btn btn-outline-secondary btn-lg fw-bold">
+                <i class="bi bi-box-seam me-2"></i> Browse Products
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block auth_content %}
+<div class="d-flex align-items-center justify-content-center min-vh-100 bg-dark text-center">
+    <div class="glass-card p-5 border-secondary shadow-lg" style="max-width: 540px; width: 100%;">
+        <div class="d-inline-flex p-4 rounded-circle bg-danger bg-opacity-25 text-danger mb-4">
+            <i class="bi bi-exclamation-octagon-fill display-1"></i>
+        </div>
+        <h1 class="display-4 fw-bold text-white mb-2">404</h1>
+        <h4 class="fw-bold text-secondary mb-3">Page Not Found</h4>
+        <p class="text-muted mb-4">Please log in to access the Inventory Management System.</p>
+        <a href="{% url 'authentication:login' %}" class="btn btn-primary btn-lg fw-bold shadow">
+            <i class="bi bi-box-arrow-in-right me-2"></i> Go to Login
+        </a>
+    </div>
+</div>
+{% endblock %}

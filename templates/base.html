@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Inventory Management System{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -91,7 +93,7 @@
         </div>
 
         <!-- Page Content Wrapper -->
-        <div id="page-content-wrapper" class="flex-grow-1">
+        <div id="page-content-wrapper" class="flex-grow-1 d-flex flex-column min-vh-100">
             <!-- Top Navbar -->
             <nav class="navbar navbar-expand-lg top-navbar no-print">
                 <div class="container-fluid">
@@ -161,9 +163,27 @@
             </nav>
 
             <!-- Main Page Content -->
-            <div class="container-fluid p-4">
+            <div class="container-fluid p-4 flex-grow-1">
                 {% block content %}{% endblock %}
             </div>
+
+            <!-- Footer with GitHub & Live Demo Links -->
+            <footer class="mt-auto py-3 px-4 text-center border-top border-secondary text-secondary small no-print">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                    <div>
+                        <span class="fw-bold text-white"><i class="bi bi-box-seam-fill text-primary me-1"></i> StockMaster Pro v1.0</span> &copy; 2026 Inventory Management System
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <a href="https://github.com/mayurkamane19/inventory-management-system" target="_blank" class="text-secondary text-decoration-none hover-white">
+                            <i class="bi bi-github me-1 fs-5"></i> GitHub Repository
+                        </a>
+                        <span class="text-muted">|</span>
+                        <span class="badge bg-success bg-opacity-25 text-success border border-success px-2 py-1">
+                            <i class="bi bi-broadcast me-1"></i> Render Live Demo
+                        </span>
+                    </div>
+                </div>
+            </footer>
         </div>
     </div>
     {% else %}
