@@ -2,6 +2,8 @@
 
 A production-ready, feature-complete Inventory Management System built with **Python Django**, **Microsoft SQL Server (T-SQL scripts & Django ORM)**, **Bootstrap 5 (Dark & Light Glassmorphism UI)**, and **Chart.js**.
 
+![Admin Dashboard Overview](static/images/dashboard_preview.png)
+
 ---
 
 ## Key Features
